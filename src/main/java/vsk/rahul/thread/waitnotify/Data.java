@@ -3,12 +3,16 @@
  */
 package vsk.rahul.thread.waitnotify;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author Rahul Vishvakarma
  *
  * @created Jul 9, 2018
  */
 public class Data {
+	
+	private static final Logger logger = Logger.getLogger(Data.class);
 
 	private String packet;
 	
@@ -18,23 +22,27 @@ public class Data {
 		while(!transfer) {
 			try {
 				this.wait();
-			} catch(InterruptedException e) {}
+			} catch(InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
 		}
-		System.out.println("Sender sending = " + packet);
+		logger.info("Sender sending = " + packet);
 		transfer = false;
 		this.packet = packet;
-		this.notify();
+		this.notifyAll();
 	}
 	
 	public synchronized String receive() {
 		while(transfer) {
 			try {
 				this.wait();
-			} catch(InterruptedException e) {}
+			} catch(InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
 		}
-		System.out.println("Receiver received = " + packet);
+		logger.info("Receiver received = " + packet);
 		transfer = true;
-		this.notify();
+		this.notifyAll();
 		return packet;
 	}
 }

@@ -5,6 +5,8 @@ package vsk.rahul.thread.concurrent.pc.nonblocking;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.apache.log4j.Logger;
+
 /**
  * Non-blocking producer and consumer implementation.
  * 
@@ -13,7 +15,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @created Jul 11, 2018
  */
 public class NonBlockingProducerConsumer {
-
+	
 	public static void main(String[] args) {
 		ConcurrentLinkedQueue<String> unboundedQueue = new ConcurrentLinkedQueue<>();
 		
@@ -35,7 +37,6 @@ class Producer implements Runnable {
 	
 	@Override
 	public void run() {
-		String str = null;
 		try {
 			unboundedQueue.offer("");
 			Thread.sleep(100);
@@ -44,6 +45,8 @@ class Producer implements Runnable {
 }
 
 class Consumer implements Runnable {
+	
+	private static final Logger logger = Logger.getLogger(Consumer.class);
 	
 	private ConcurrentLinkedQueue<String> unboundedQueue;
 	
@@ -56,8 +59,12 @@ class Consumer implements Runnable {
 		String str = null;
 		try {
 			str = unboundedQueue.peek();
+			System.err.println(str);
 			Thread.sleep(100);
-		} catch(Exception e) {}
+		} catch(InterruptedException e) {
+			logger.error(e.getMessage());
+			Thread.currentThread().interrupt();
+		}
 		
 	}
 }

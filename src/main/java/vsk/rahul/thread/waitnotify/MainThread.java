@@ -3,11 +3,7 @@
  */
 package vsk.rahul.thread.waitnotify;
 
-import java.util.Collections;
-import java.util.ConcurrentModificationException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import org.apache.log4j.Logger;
 
 /**
  * @author Rahul Vishvakarma
@@ -15,11 +11,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @created Jul 9, 2018
  */
 public class MainThread {
+	
+	private static final Logger logger = Logger.getLogger(MainThread.class);
 
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		
 		ThreadA th = new ThreadA();
 		
@@ -29,15 +27,17 @@ public class MainThread {
 		synchronized (th) {
 			try {
 				
-				System.out.println(name() + " thread is waiting and released the monitor on 'th' "
+				logger.info(name() + " thread is waiting and released the monitor on 'th' "
 						+ "until another thread having same monitor calls notify() or notifyAll()..."
 						+ "\nIf no one will invoke notify()/notifyAll() then " + name() 
 						+ " will be waiting forever :("
 						+ "\n\nIf you don't believe try to comment notify() call in ThreadA run() method.\n");
 				th.wait();
-				System.out.println("\n\nThank God !! Someone called notify()/notifyAll() on 'th' instance while having "
+				logger.info("\n\nThank God !! Someone called notify()/notifyAll() on 'th' instance while having "
 						+ "the monitor of 'th' instance.");
-			} catch(InterruptedException e) {}
+			} catch(InterruptedException e) {
+				throw e;
+			}
 		}
 	}
 	
@@ -48,6 +48,9 @@ public class MainThread {
 }
 
 class ThreadA implements Runnable {
+	
+	private static final Logger logger = Logger.getLogger(ThreadA.class);
+	
 	int total;
 	
 	public void run() {
@@ -55,8 +58,8 @@ class ThreadA implements Runnable {
 			for(int i = 0; i < 100; i++) {
 				total += i;
 			}
-			System.out.println(Thread.currentThread().getName() + " completed Total : " + this.total);
-			notify();
+			logger.info(Thread.currentThread().getName() + " completed Total : " + this.total);
+			this.notifyAll();
 		}
 	}
 }

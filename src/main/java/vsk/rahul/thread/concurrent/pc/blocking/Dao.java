@@ -5,6 +5,8 @@ package vsk.rahul.thread.concurrent.pc.blocking;
 
 import java.net.ConnectException;
 
+import org.apache.log4j.Logger;
+
 /**
  * Dao to put the data in configured repository.
  * 
@@ -13,6 +15,8 @@ import java.net.ConnectException;
  * @created Jul 12, 2018
  */
 public class Dao {
+	
+	private static final Logger logger = Logger.getLogger(Dao.class);
 
 	public Response process(Request request) throws ConnectException {
 		Response response = new Response();
@@ -21,7 +25,7 @@ public class Dao {
 		
 		if(!request.getConnectionTimeout()) {
 			String msg = String.format("Connection is not available try to post %s again.", request.toString());
-			System.out.println(msg);
+			logger.error(msg);
 			throw new ConnectException(msg);
 		}
 		
@@ -30,7 +34,7 @@ public class Dao {
 			throw new ConnectException("Deliberately retrying again.");
 		}
 		
-		System.out.println(String.format("%s processed successfully.", request.toString()));
+		logger.info(String.format("%s processed successfully.", request.toString()));
 		
 		return response;
 	}

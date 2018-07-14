@@ -2,7 +2,11 @@ package vsk.rahul.thread.synchronizer.latch;
 
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.log4j.Logger;
+
 public class TimeHarness {
+	
+	private static final Logger logger = Logger.getLogger(TimeHarness.class);
 
 	public static long timeTasks(int nThread, final Task task) throws InterruptedException {
 		
@@ -18,7 +22,10 @@ public class TimeHarness {
 					} finally {
 						endGate.countDown();
 					}
-				} catch(InterruptedException e) {}
+				} catch(InterruptedException e) {
+					logger.error(e.getMessage());
+					Thread.currentThread().interrupt();
+				}
 			});
 			t.start();
 		}
@@ -32,26 +39,31 @@ public class TimeHarness {
 		 * main thread is waiting at end gate.
 		 * Until end gate opens.
 		 */
-		System.out.println("main thread is waiting.");
+		logger.info("main thread is waiting.");
 		endGate.await();
 		
-		System.out.println("end gate open for main thread.");
+		logger.info("end gate open for main thread.");
 		long end = System.nanoTime();
 		return end - start;
 	}
 	
 	public static void main(String[] args) throws InterruptedException {
-		System.out.println(timeTasks(10, new Task()));
+		logger.info(timeTasks(10, new Task()));
 	}
 }
 
 class Task {
 	
+	private static final Logger logger = Logger.getLogger(Task.class);
+	
 	public void work() {
-		System.out.println(Thread.currentThread().getName() + " finished.");
+		logger.info(Thread.currentThread().getName() + " finished.");
 		try {
 			Thread.sleep(1000);
-		} catch(InterruptedException e) {}
+		} catch(InterruptedException e) {
+			logger.error(e.getMessage());
+			Thread.currentThread().interrupt();
+		}
 	} 
 	
 }

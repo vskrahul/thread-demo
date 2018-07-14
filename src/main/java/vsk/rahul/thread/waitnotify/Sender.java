@@ -5,12 +5,16 @@ package vsk.rahul.thread.waitnotify;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author Rahul Vishvakarma
  *
  * @created Jul 9, 2018
  */
 public class Sender implements Runnable {
+	
+	private static final Logger logger = Logger.getLogger(Sender.class);
 
 	private Data data;
 	
@@ -32,7 +36,10 @@ public class Sender implements Runnable {
 			data.send(packet);
 			try {
 				Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 5000));
-			} catch(InterruptedException e) {}
+			} catch(InterruptedException e) {
+				Thread.currentThread().interrupt();
+				logger.error(e.getMessage(), e);
+			}
 		}
 	}
 }

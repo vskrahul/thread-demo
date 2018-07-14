@@ -6,6 +6,8 @@ package vsk.rahul.thread.join;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.apache.log4j.Logger;
+
 /**
  * join() example.
  * 
@@ -14,6 +16,8 @@ import java.time.format.DateTimeFormatter;
  * @created Jul 9, 2018
  */
 public class JoinExample {
+	
+	private static final Logger logger = Logger.getLogger(JoinExample.class);
 
 	public static void main(String[] args) throws Exception {
 		Thread t1 = new Thread(new MyRunnable(), "t1");
@@ -27,7 +31,8 @@ public class JoinExample {
         	// main thread will wait for max 2 seconds or until the t1 is finished.
             t1.join(2000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+        	logger.error(e.getMessage(), e);
+            throw e;
         }
         
         t2.start();
@@ -36,7 +41,8 @@ public class JoinExample {
         try {
             t1.join();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+        	logger.error(e.getMessage(), e);
+            throw e;
         }
         
         t3.start();
@@ -47,11 +53,11 @@ public class JoinExample {
             t2.join();
             t3.join();
         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        	logger.error(e.getMessage(), e);
+            throw e;
         }
         
-        System.out.println("All threads are dead, exiting main thread " + currentTimestamp());
+       logger.info("All threads are dead, exiting main thread " + currentTimestamp());
 	}
 	
 	public static String currentTimestamp() {
@@ -62,17 +68,20 @@ public class JoinExample {
 }
 
 class MyRunnable implements Runnable{
+	
+	private static final Logger logger = Logger.getLogger(MyRunnable.class);
 
     @Override
     public void run() {
-        System.out.println("Thread started:::"+Thread.currentThread().getName() + currentTimestamp());
+        logger.info("Thread started:::"+Thread.currentThread().getName() + currentTimestamp());
         try {
         	// sleep at least for 4 seconds
             Thread.sleep(4000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+        	logger.error(e.getMessage(), e);
+            Thread.currentThread().interrupt();
         }
-        System.out.println("Thread ended:::"+Thread.currentThread().getName() + currentTimestamp());
+        logger.info("Thread ended:::"+Thread.currentThread().getName() + currentTimestamp());
     }
     
     public String currentTimestamp() {

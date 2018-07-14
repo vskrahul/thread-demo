@@ -3,12 +3,16 @@
  */
 package vsk.rahul.thread.join;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author Rahul Vishvakarma
  *
  * @created Jul 10, 2018
  */
 public class JoinKeepTheLock {
+	
+	private static final Logger logger = Logger.getLogger(JoinKeepTheLock.class);
 
 	public static void main(String[] args) throws InterruptedException {
 		KeepLock r = new KeepLock();
@@ -22,21 +26,26 @@ public class JoinKeepTheLock {
 		t1.start();
 		t1.join();
 		Thread.yield();
-		System.out.println(Thread.currentThread().getName() + " All thread are dead.");
+		logger.info(Thread.currentThread().getName() + " All thread are dead.");
 	}
 }
 
 class KeepLock implements Runnable {
+	
+	private static final Logger logger = Logger.getLogger(KeepLock.class);
+	
 	@Override
 	public void run() {
 		synchronized (this) {
-			System.out.println(Thread.currentThread().getName() + " is going to sleep.");
+			logger.info(Thread.currentThread().getName() + " is going to sleep.");
 			
 			try {
 				Thread.sleep(3000);
-			} catch(InterruptedException e) {}
+			} catch(InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
 			
-			System.out.println(Thread.currentThread().getName() + " woke up.");
+			logger.info(Thread.currentThread().getName() + " woke up.");
 		}
 	}
 }

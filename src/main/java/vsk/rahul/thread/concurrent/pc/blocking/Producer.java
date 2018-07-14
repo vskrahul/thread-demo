@@ -5,6 +5,8 @@ package vsk.rahul.thread.concurrent.pc.blocking;
 
 import java.util.concurrent.BlockingQueue;
 
+import org.apache.log4j.Logger;
+
 /**
  * A runnable producer to keep the failed request in shared blocking queue.
  * 
@@ -13,6 +15,8 @@ import java.util.concurrent.BlockingQueue;
  * @created Jul 12, 2018
  */
 public class Producer implements Runnable {
+	
+	private static final Logger logger = Logger.getLogger(Producer.class);
 
 	private BlockingQueue<Request> queue;
 	
@@ -28,13 +32,16 @@ public class Producer implements Runnable {
 		try {
 			while(true) {
 				Request request = failedRequestQueue.take();
-				System.out.println(Thread.currentThread().getName() + 
+				logger.info(Thread.currentThread().getName() + 
 						String.format(" trying to put %s in queue.", request));
 				queue.put(request);
+				if(Thread.currentThread().isInterrupted()) 
+					break;
 			}
 		} catch(InterruptedException e) {
+			Thread.currentThread().interrupt();
 			// do logging here.
-			System.out.println(Thread.currentThread().getName() + " is interrupted.");
+			logger.error(Thread.currentThread().getName() + " is interrupted.");
 		}
 	}
 }

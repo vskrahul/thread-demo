@@ -3,6 +3,8 @@
  */
 package vsk.rahul.thread.interrupt;
 
+import org.apache.log4j.Logger;
+
 /**
  * If interrupt() is calling on thread instance :-
  * 
@@ -30,7 +32,9 @@ public class InterruptDemo {
 
 		try {
 			Thread.sleep(2000);
-		} catch(InterruptedException e) {}
+		} catch(InterruptedException e) {
+			throw e;
+		}
 
 		t1.interrupt();
 		t2.interrupt();
@@ -38,21 +42,27 @@ public class InterruptDemo {
 }
 
 class InterruptTestWhenThreadIsBlocked implements Runnable {
+	
+	private static final Logger logger = Logger.getLogger(InterruptTestWhenThreadIsBlocked.class);
 
 	public void run() {
-		while(true) {
-			try {
+		try {
+			while(true) {
 				Thread.sleep(100);
-			} catch(InterruptedException e) {
-				System.out.println(Thread.currentThread().getName() + " is interrupted while in sleeping"
-					+ " state. Got error : " + e.getMessage());
-				break;
+				if(Thread.currentThread().isInterrupted())
+					break;
 			}
+		} catch(InterruptedException e) {
+			logger.error(Thread.currentThread().getName() + " is interrupted while in sleeping"
+				+ " state. Got error : " + e.getMessage());
+			Thread.currentThread().interrupt();
 		}
 	}
 }
 
 class InterruptTestWhenThreadIsNotBlocked implements Runnable {
+	
+	private static final Logger logger = Logger.getLogger(InterruptTestWhenThreadIsNotBlocked.class);
 
 	public void run() {
 
@@ -60,7 +70,7 @@ class InterruptTestWhenThreadIsNotBlocked implements Runnable {
 
 		while(true) {
 			if(Thread.currentThread().isInterrupted()) {
-				System.out.println(Thread.currentThread().getName() + " is interrupted - " + interruptCount);
+				logger.info(Thread.currentThread().getName() + " is interrupted - " + interruptCount);
 				interruptCount++;
 				break;
 			}

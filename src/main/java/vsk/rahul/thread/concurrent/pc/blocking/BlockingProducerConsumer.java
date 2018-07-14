@@ -11,15 +11,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author Rahul Vishvakarma
  *
  * @created Jul 11, 2018
  */
 public class BlockingProducerConsumer {
+	
+	private static final Logger logger = Logger.getLogger(BlockingProducerConsumer.class);
 
 	public static void main(String[] args) throws Exception {
-		System.out.println("Starting....");
+		logger.info("Starting....");
 		BlockingQueue<Request> queue = new LinkedBlockingQueue<>(10);
 		BlockingQueue<Request> failedRequestQueue = new LinkedBlockingQueue<>();
 		
@@ -29,20 +33,21 @@ public class BlockingProducerConsumer {
 		List<Request> requests = new ArrayList<>();
 		boolean flag = false;
 		for(int i = 0; i < 100; i++) {
-			Request req = new Request(i + 101, new Integer(i + 101).toString(), flag = !flag);
+			flag = !flag;
+			Request req = new Request(i + 101, Integer.toString(i + 101), flag);
 			requests.add(req);
 		}
 		
 		/*
 		 * Have started 5 consumer.
 		 */
-		for(int i = 0; i < 2; i++)
+		for(int i = 0; i < 1; i++)
 			pool.submit(new Producer(queue, failedRequestQueue));
 		
 		/*
 		 * Have started 5 consumer.
 		 */
-		for(int i = 0; i < 2; i++)
+		for(int i = 0; i < 1; i++)
 			pool.submit(new Consumer(queue, failedRequestQueue, dao));
 		
 		
@@ -54,11 +59,19 @@ public class BlockingProducerConsumer {
 			pool.submit(run);
 		}
 		Thread.sleep(12000);
-		failedRequestQueue.put(new Request(1111, "Dummy".toString(), false));
+		failedRequestQueue.put(new Request(1111, "Dummy-1", false));
+		Thread.sleep(12000);
+		failedRequestQueue.put(new Request(1111, "Dummy-2", false));
+		Thread.sleep(12000);
+		failedRequestQueue.put(new Request(1111, "Dummy-3", false));
+		Thread.sleep(12000);
+		failedRequestQueue.put(new Request(1111, "Dummy-4", false));
 	}
 }
 
 class RequestThread implements Runnable {
+	
+	private static final Logger logger = Logger.getLogger(RequestThread.class);
 	
 	private Dao dao;
 	
@@ -80,7 +93,13 @@ class RequestThread implements Runnable {
 			/*
 			 * If failed to process create producer to process put the request in queue.
 			 */
-			failedRequestQueue.offer(req);
+			if(failedRequestQueue.offer(req))
+				try {
+					failedRequestQueue.put(req);
+				} catch(InterruptedException ex) {
+					logger.error(e.getMessage(), ex);
+					Thread.currentThread().interrupt();
+				}
 		}
 	}
 }

@@ -6,12 +6,16 @@ package vsk.rahul.thread.concurrent.pc.blocking;
 import java.net.ConnectException;
 import java.util.concurrent.BlockingQueue;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author Rahul Vishvakarma
  *
  * @created Jul 12, 2018
  */
 public class Consumer implements Runnable {
+	
+	private static final Logger logger = Logger.getLogger(Consumer.class);
 
 	private BlockingQueue<Request> queue;
 	
@@ -33,15 +37,28 @@ public class Consumer implements Runnable {
 			while(true) {
 				request = queue.take();
 				request.setConnectionTimeout(true);
-				System.out.println(String.format("%s trying to process %s again.", Thread.currentThread().getName(), request));
-				dao.process(request);
+				logger.info(String.format("%s trying to process %s again.", Thread.currentThread().getName(), request));
+				process(request);
+				if(Thread.currentThread().isInterrupted()) 
+					break;
 			}
 		} catch(InterruptedException e) {
-			System.out.println(Thread.currentThread().getName() + " is interrupted.");
+			Thread.currentThread().interrupt();
+			logger.error(Thread.currentThread().getName() + " is interrupted.");
+		} 
+	}
+	
+	private void process(Request request) {
+		try {
+			dao.process(request);
 		} catch(ConnectException e) {
-			try {
-				failedRequestQueue.offer(request);
-			} catch(Exception ee) {}
+			if(failedRequestQueue.offer(request))
+				try {
+					failedRequestQueue.put(request);
+				} catch(InterruptedException ex) {
+					logger.error(e.getMessage(), ex);
+					Thread.currentThread().interrupt();
+				}
 		}
 	}
 }
